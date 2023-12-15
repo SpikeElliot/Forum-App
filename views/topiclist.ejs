@@ -1,0 +1,17 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Topic list / <%=forumName%></title>
+    <link rel="stylesheet"  type="text/css" href="/main.css" />
+  </head>
+  <body>
+    <h1><%=forumName%> Topic list</h1>
+    <ul>
+      <!-- For loop iterates through topics array -->
+      <% for (let i = 0; i < topics.length; i++) { %>
+        <!-- Display all topics on page -->
+        <li><a href=/topic/<%= topics[i].name %>><%= topics[i].name %></a></li>
+      <% } %>
+    </ul>
+  </body>
+</html>

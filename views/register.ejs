@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Register / <%=forumName%></title>
+    <link rel="stylesheet"  type="text/css" href="/main.css" />
+  </head>
+  <body>
+    <h1>Register for <%=forumName%></h1>
+    <form method="POST" action="/registered">
+        <p>Username (Between 3 - 45 characters):</p>
+        <input id="username" type="text" name="username" minlength="3" maxlength="45" />
+        <p>Password (Between 8 - 45 characters):</p>
+        <input id="password" type="password" name="password" minlength="8" maxlength="45" />
+        <p>Email Address (Must be valid):</p>
+        <input id="email" type="email" name="email" maxlength="45" />
+        <br><br>
+        <input type="submit" value="Register" />
+      </form>
+  </body>
+</html>

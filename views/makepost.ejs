@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Make post / <%=forumName%></title>
+    <link rel="stylesheet"  type="text/css" href="/main.css" />
+  </head>
+  <body>
+    <h1>Make a post on <%=forumName%></h1>
+    <form method="POST" action="/posted">
+        <label for="topic">Select a topic:</label>
+        <select id="topic" name="topic">
+        <!-- For loop iterates through topics array -->
+        <% for (let i = 0; i < topics.length; i++) { %>
+            <!-- Display all topics as options in drop-down list -->
+            <option value=<%= topics[i].name %>><%= topics[i].name %></option>
+      <% } %>
+        </select>
+        <p>Post Title:</p>
+        <input id="title" type="text" name="title" maxlength="200" size="100" />
+        <p>Post Body (1000 character limit):</p>
+        <textarea id="content" type="text" name="content" maxlength="1000" rows="10" cols="100"></textarea>
+        <p>User posting:</p>
+        <input id="user" type="text" name="user" maxlength="45" value="7"/>
+        <br><br>
+        <input type="submit" value="Post" />
+      </form>
+  </body>
+</html>

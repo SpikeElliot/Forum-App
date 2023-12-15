@@ -1,0 +1,17 @@
+<!doctype html>
+<html>
+  <head>
+    <title>User list / <%=forumName%></title>
+    <link rel="stylesheet"  type="text/css" href="/main.css" />
+  </head>
+  <body>
+    <h1><%=forumName%> User list</h1>
+    <ul>
+      <!-- For loop iterates through users array -->
+      <% for (let i = 0; i < users.length; i++) { %>
+        <!-- Display usernames of all users on page -->
+        <li><%= users[i].username + " || Joined: " + users[i].date_joined %></li>
+      <% } %>
+    </ul>
+  </body>
+</html>
