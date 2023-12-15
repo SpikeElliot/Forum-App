@@ -32,6 +32,20 @@ module.exports = function(app, forumData) {
             res.render("topic.ejs", newData);
          });
     });
+    app.get('/allposts', function(req,res) {
+        // query database to get all posts
+        let sqlquery = "SELECT * FROM topic t LEFT JOIN post p ON t.topic_id = p.topic_id LEFT JOIN user u ON p.user_id = u.user_id ORDER BY p.date DESC";
+        // execute sql query
+        db.query(sqlquery, [req.params.name], (err,result) => {
+            if (err) {
+                res.redirect('./');
+                return console.error(err.message);
+            }
+            let newData = Object.assign({}, forumData, {posts:result});
+            console.log(newData);
+            res.render("allposts.ejs", newData);
+         });
+    });
     app.get('/userlist', function(req,res) {
         // query database to get usernames
         let sqlquery = "SELECT `username`, `date_joined` FROM `user` ORDER BY `username` ASC";
@@ -59,6 +73,31 @@ module.exports = function(app, forumData) {
             let newData = Object.assign({}, forumData, {topics:result});
             console.log(newData);
             res.render("makepost.ejs", newData);
+         });
+    });
+    app.get('/search', function(req,res) {
+        res.render("search.ejs", forumData);
+    });
+    app.get('/search-result', function (req,res) {
+        // sql query to execute
+        let sqlquery = "SELECT * FROM post p LEFT JOIN user u ON p.user_id = u.user_id LEFT JOIN topic t ON p.topic_id = t.topic_id WHERE p.title LIKE ?";
+        // search database for names containing user input submitted through form
+        db.query(sqlquery, ["%" + req.query.keyword + "%"], (err, result) => {
+            if (err) {
+                // redirect to index page if error
+                res.redirect('./');
+                return console.error(err.message);
+            } else {
+                // create newData object by combining forumData and data found in database
+                let newData = Object.assign({}, forumData, {posts:result});
+                if (!newData.posts.length) { // check if array empty
+                    res.send("No results found");
+                } else {
+                    // display search results page if array not empty
+                    console.log(newData);
+                    res.render("search-results.ejs", newData);
+                }
+            }
          });
     });
     app.post('/posted', function(req,res) {

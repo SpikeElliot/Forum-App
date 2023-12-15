@@ -1,0 +1,15 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Search / <%=forumName%></title>
+    <link rel="stylesheet"  type="text/css" href="/main.css" />
+  </head>
+  <body>
+    <h1>Search for a post - <%=forumName%></h1>
+    <!-- Form submission sends user to /search-result route -->
+    <form action="/search-result" method="GET">
+      <input id="search-box" type="text" name="keyword" value="" >
+      <input type="submit" value="Search" >
+    </form>
+  </body>
+</html>
