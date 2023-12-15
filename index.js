@@ -2,6 +2,7 @@
 var express = require('express');
 var ejs = require('ejs');
 var bodyParser= require('body-parser');
+const mysql = require('mysql');
 
 // Create the express application object
 const app = express();
@@ -10,6 +11,23 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // Set up css
 app.use(express.static(__dirname + '/public'));
+
+// Define the database connection
+const db = mysql.createConnection ({
+    host: 'localhost',
+    user: 'forumuser',
+    password: 'app2027',
+    database: 'myforum'
+});
+
+// Connect to the database
+db.connect((err) => {
+    if (err) {
+        throw err;
+    }
+    console.log('Connected to database');
+});
+global.db = db;
 
 // Set the directory where Express will pick up HTML files
 // __dirname will get the current directory
@@ -23,10 +41,10 @@ app.set('view engine', 'ejs');
 app.engine('html', ejs.renderFile);
 
 // Define our data
-var siteData = {siteName: "Spike's Forum"};
+var forumData = {forumName: "Spike's Forum"};
 
 // Requires the main.js file inside the routes folder passing in the Express app and data as arguments.  All the routes will go in this file
-require("./routes/main")(app, siteData);
+require("./routes/main")(app, forumData);
 
 // Start the web app listening
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
