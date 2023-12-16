@@ -1,13 +1,22 @@
 // Import required modules
-var express = require('express');
-var ejs = require('ejs');
-var bodyParser= require('body-parser');
+const express = require('express');
+const session = require('express-session');
+const ejs = require('ejs');
+const cookieParser = require("cookie-parser");
+const bodyParser= require('body-parser');
 const mysql = require('mysql');
 
 // Create the express application object
 const app = express();
 const port = 8000;
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieParser());
+
+app.use(session({
+    secret: "amar",
+    saveUninitialized: true,
+    resave: true
+}));
 
 // Set up css
 app.use(express.static(__dirname + '/public'));

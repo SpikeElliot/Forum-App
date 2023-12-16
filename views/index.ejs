@@ -5,9 +5,16 @@
     <link rel="stylesheet"  type="text/css" href="/main.css" />
   </head>
   <body>
-    <h1>Welcome to <%=forumName%>!</h1>
-    <p><a href="/register">SIGN UP</a></p>
-    <p><a href="/login">LOG IN</a></p>
+    <h1><%=forumName%></h1>
+    <% if (userData) { %>
+      <h2>Logged in as: <%=userData.name%></h2>
+    <% } %>
+    <% if (userData) { %>
+      <p><a href="/logout">LOG OUT</a></p>
+    <% } else { %>
+      <p><a href="/register">SIGN UP</a></p>
+      <p><a href="/login">LOG IN</a></p>
+    <% } %>
     <p><a href="/topiclist">Topics</a></p>
     <p><a href="/userlist">Users</a></p>
     <p><a href="/allposts">All Posts</a></p>

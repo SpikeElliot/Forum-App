@@ -1,0 +1,18 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Log in / <%=forumName%></title>
+    <link rel="stylesheet"  type="text/css" href="/main.css" />
+  </head>
+  <body>
+    <h1>Log in to <%=forumName%></h1>
+    <form method="POST" action="/loggedin">
+        <p>Username:</p>
+        <input id="login_username" type="text" name="username" minlength="3" maxlength="45" />
+        <p>Password:</p>
+        <input id="login_password" type="password" name="password" minlength="8" maxlength="45" />
+        <br><br>
+        <input type="submit" value="Log in" />
+      </form>
+  </body>
+</html>

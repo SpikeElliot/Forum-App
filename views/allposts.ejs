@@ -12,10 +12,9 @@
           <!-- Display post info on page -->
           <% p = posts[i]; %>
           <li>
-              <h2>Topic: <%= p.name %></h2>
-              <h2><%= p.title %></h2>
+            <h2><a href=/post/<%= p.post_id%>><%= p.title %></a> || <a href=/topic/<%= p.name%>> Topic: <%= p.name %></a></h2>
               <p><%= p.content %></p>
-              <p>Posted by: <%= p.username %> on: <%= p.date %></p>
+              <p>Posted by: <%= p.username %> || Posted on: <%= p.date %></p>
           </li>
         <% } %>
       </ul>
