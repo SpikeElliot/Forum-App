@@ -19,13 +19,25 @@ module.exports = function(app, forumData) {
                 res.redirect('./'); 
             }
             let newData = Object.assign({}, forumData, {topics:result});
-            console.log(newData);
             res.render("topiclist.ejs", newData);
          });
     });
     app.get('/topic/:name', function(req,res) {
-        // query database to get posts
-        let sqlquery = `SELECT t.name, p.post_id, p.title, p.content, p.date, u.username
+        forumData.userData = false;
+        if (req.session.user) {
+            forumData.userData = req.session.user;
+        }
+        let sqlquery = `SELECT topic_id
+                        FROM topic
+                        WHERE name = ?`;
+        db.query(sqlquery, [req.params.name], (err,result) => {
+            if (err) {
+                res.redirect('./');
+                return console.error(err.message);
+            }
+            forumData.topicID = result[0].topic_id;
+            // query database to get posts
+            sqlquery = `SELECT p.post_id, p.title, p.content, p.date, u.username
                         FROM topic t 
                         LEFT JOIN post p 
                         ON t.topic_id = p.topic_id 
@@ -34,17 +46,17 @@ module.exports = function(app, forumData) {
                         WHERE t.name = ? 
                         AND p.topic_id IS NOT NULL 
                         ORDER BY p.date DESC`;
-        // execute sql query
-        db.query(sqlquery, [req.params.name], (err,result) => {
-            if (err) {
-                res.redirect('./');
-                return console.error(err.message);
-            }
-            forumData.topicName = req.params.name;
-            let newData = Object.assign({}, forumData, {posts:result});
-            console.log(newData);
-            res.render("topic.ejs", newData);
-         });
+            // execute sql query
+            db.query(sqlquery, [req.params.name], (err,result) => {
+                if (err) {
+                    res.redirect('./');
+                    return console.error(err.message);
+                }
+                forumData.topicName = req.params.name;
+                let newData = Object.assign({}, forumData, {posts:result});
+                res.render("topic.ejs", newData);
+            });
+        });
     });
     app.get('/post/:id', function(req,res) {
         forumData.userData = false;
@@ -68,7 +80,6 @@ module.exports = function(app, forumData) {
                 return console.error(err.message);
             }
             let newData = Object.assign({}, forumData, {post:result});
-            console.log(newData);
             res.render("post.ejs", newData);
          });
     });
@@ -89,7 +100,6 @@ module.exports = function(app, forumData) {
                 return console.error(err.message);
             }
             let newData = Object.assign({}, forumData, {posts:result});
-            console.log(newData);
             res.render("allposts.ejs", newData);
          });
     });
@@ -104,7 +114,6 @@ module.exports = function(app, forumData) {
                 res.redirect('./'); 
             }
             let newData = Object.assign({}, forumData, {users:result});
-            console.log(newData);
             res.render("userlist.ejs", newData);
          });
     });
@@ -121,16 +130,18 @@ module.exports = function(app, forumData) {
     app.get('/makepost', function(req,res) {
         if (req.session.user) {
             // query database to get topics
-            let sqlquery = `SELECT name 
-                            FROM topic 
+            let sqlquery = `SELECT t.name 
+                            FROM topic t
+                            LEFT JOIN topic_members m
+                            ON t.topic_id = m.topic_id
+                            WHERE m.user_id = ?
                             ORDER BY name ASC`;
             // execute sql query
-            db.query(sqlquery, (err,result) => {
+            db.query(sqlquery, [req.session.user.id], (err,result) => {
                 if (err) {
                     res.redirect('./'); 
                 }
                 let newData = Object.assign({}, forumData, {topics:result});
-                console.log(newData);
                 res.render("makepost.ejs", newData);
             });
         } else {
@@ -156,16 +167,14 @@ module.exports = function(app, forumData) {
                 // redirect to index page if error
                 res.redirect('./');
                 return console.error(err.message);
+            }
+            // create newData object by combining forumData and data found in database
+            let newData = Object.assign({}, forumData, {posts:result});
+            if (!newData.posts.length) { // check if array empty
+                res.send("No results found");
             } else {
-                // create newData object by combining forumData and data found in database
-                let newData = Object.assign({}, forumData, {posts:result});
-                if (!newData.posts.length) { // check if array empty
-                    res.send("No results found");
-                } else {
-                    // display search results page if array not empty
-                    console.log(newData);
-                    res.render("search-results.ejs", newData);
-                }
+                // display search results page if array not empty
+                res.render("search-results.ejs", newData);
             }
          });
     });
@@ -179,23 +188,58 @@ module.exports = function(app, forumData) {
               res.redirect('./');
               return console.error(err.message);
             }
+            let topicID = result[0].topic_id;
+            // saving data in database
+            sqlquery = `INSERT INTO post (user_id, topic_id, title, content) 
+                        VALUES (?,?,?,?)`;
+            // execute sql query
+            let newrecord = [req.session.user.id, topicID, req.body.title, req.body.content];
+            db.query(sqlquery, newrecord, (err,result) => {
+                if (err) {
+                    res.redirect('./');
+                    return console.error(err.message);
+                }
+                res.redirect(`/topic/${req.body.topic}`);
+            });
+        });
+    });
+    app.post('/topicjoined', function(req,res) {
+        // saving data in database
+        sqlquery = `INSERT INTO topic_members (topic_id, user_id) 
+                    VALUES (?,?)`;
+        // execute sql query
+        let newrecord = [req.body.topicid, req.session.user.id];
+        db.query(sqlquery, newrecord, (err,result) => {
+            if (err) {
+                res.redirect('./');
+                return console.error(err.message);
+            }
             else {
-                console.log(result);
-                let topicID = result[0].topic_id;
-                // saving data in database
-                sqlquery = `INSERT INTO post (user_id, topic_id, title, content) 
-                            VALUES (?,?,?,?)`;
-                // execute sql query
-                let newrecord = [req.session.user.id, topicID, req.body.title, req.body.content];
-                db.query(sqlquery, newrecord, (err,result) => {
-                    if (err) {
-                        res.redirect('./');
-                        return console.error(err.message);
-                    }
-                    else {
-                        res.redirect(`/topic/${req.body.topic}`);
-                    }
-                });
+                req.session.user.topics.push({topic_id: Number(req.body.topicid)});
+                req.session.save();
+                res.redirect(`/topic/${req.body.topicname}`);
+            }
+        });
+    });
+    app.post('/topicleft', function(req,res) {
+        // saving data in database
+        sqlquery = `DELETE FROM topic_members
+                    WHERE topic_id = ?
+                    AND user_id = ?`;
+        // execute sql query
+        let newrecord = [req.body.topicid, req.session.user.id];
+        db.query(sqlquery, newrecord, (err,result) => {
+            if (err) {
+                res.redirect('./');
+                return console.error(err.message);
+            }
+            else {
+                let index = req.session.user.topics.findIndex(item => item.topic_id == req.body.topicid);
+                if (index > -1) {
+                    req.session.user.topics.splice(index, 1);
+                }
+                req.session.save();
+                res.redirect(`/topic/${req.body.topicname}`);
             }
         });
     });
@@ -244,9 +288,23 @@ module.exports = function(app, forumData) {
         db.query(sqlquery, newrecord, (err,result) => {
           if (err) {
             return console.error(err.message);
-          } else {
+          } 
+          else {
             req.session.user = {id: result[0].user_id, name: result[0].username};
-            req.session.save();
+            // get topics user has joined from database
+            sqlquery = `SELECT t.topic_id
+                        FROM topic t
+                        LEFT JOIN topic_members m
+                        ON t.topic_id = m.topic_id
+                        WHERE m.user_id = ?`
+            db.query(sqlquery, [req.session.user.id], (err,result) => {
+                if (err) {
+                    return console.error(err.message);
+                } else {
+                    req.session.user.topics = result;
+                    req.session.save();
+                }
+            });
           }
           res.redirect('./');
         });

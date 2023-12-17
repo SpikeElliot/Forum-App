@@ -6,6 +6,27 @@
   </head>
   <body>
     <h1>Posts for <%=topicName%> topic - <%=forumName%></h1>
+    <% if (userData) { %>
+      <% let match = false; %>
+      <% for (let i = 0; i < userData.topics.length; i++) { %>
+        <% if (userData.topics[i].topic_id == topicID) { %>
+          <% match = true; %>
+          <form method="POST" action="/topicleft">
+            <input id="lefttopicid" type="hidden" name="topicid" value=<%=topicID%>>
+            <input id="lefttopicname" type="hidden" name="topicname" value=<%=topicName%>>
+            <input type="submit" value="Leave Topic" />
+          </form>
+          <% break; %>
+        <% } %>
+      <% } %>
+    <% if (!match) { %>
+      <form method="POST" action="/topicjoined">
+        <input id="joinedtopicid" type="hidden" name="topicid" value=<%=topicID%>>
+        <input id="joinedtopicname" type="hidden" name="topicname" value=<%=topicName%>>
+        <input type="submit" value="Join Topic" />
+      </form>
+    <% } %>
+  <% } %>
     <ul>
       <!-- For loop iterates through posts array -->
       <% for (let i = 0; i < posts.length; i++) { %>
