@@ -13,5 +13,13 @@
         <li><a href=/topic/<%= topics[i].name %>><%= topics[i].name %></a></li>
       <% } %>
     </ul>
+    <% if (userData) { %>
+      <% if (userData.isMod) { %>
+      <form method="POST" action="/topicadded">
+          <input id="newtopicname" type="text" name="newtopicname" maxlength="45" size="20" />
+          <input type="submit" value="Add Topic" />
+      </form>
+      <% } %>
+    <% } %>
   </body>
 </html>

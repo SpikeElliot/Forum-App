@@ -26,6 +26,13 @@
         <input type="submit" value="Join Topic" />
       </form>
     <% } %>
+    <!-- User can delete the topic if they are a moderator -->
+    <% if (userData.isMod) { %>
+      <form method="POST" action="/topicdeleted">
+          <input type="hidden" name="deletedtopicid" value=<%=topicID%>>
+          <input type="submit" value="Delete Topic" />
+      </form>
+    <% } %>
   <% } %>
     <ul>
       <!-- For loop iterates through posts array -->

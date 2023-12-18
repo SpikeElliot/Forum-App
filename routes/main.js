@@ -9,6 +9,10 @@ module.exports = function(app, forumData) {
         res.render('index.ejs', forumData);
     });
     app.get('/topiclist', function(req,res) {
+        forumData.userData = false;
+        if (req.session.user) {
+            forumData.userData = req.session.user;
+        }
         // query database to get topics
         let sqlquery = `SELECT name
                         FROM topic 
@@ -34,6 +38,9 @@ module.exports = function(app, forumData) {
             if (err) {
                 res.redirect('./');
                 return console.error(err.message);
+            } else if (result.length == 0) {
+                res.redirect('./');
+                return;
             }
             forumData.topicID = result[0].topic_id;
             // query database to get posts
@@ -64,7 +71,7 @@ module.exports = function(app, forumData) {
             forumData.userData = req.session.user;
         }
         // query database to get post info
-        let sqlquery = `SELECT t.name, p.post_id, p.title, p.content, p.date, u.username
+        let sqlquery = `SELECT t.name, p.post_id, p.user_id, p.title, p.content, p.date, u.username
                         FROM post p 
                         LEFT JOIN topic t 
                         ON t.topic_id = p.topic_id 
@@ -76,10 +83,13 @@ module.exports = function(app, forumData) {
             if (err) {
                 res.redirect('./');
                 return console.error(err.message);
+            } else if (result.length == 0) {
+                res.redirect('./');
+                return;
             }
             let newData = Object.assign({}, forumData, {post:result});
             //query database to get reply info for post
-            sqlquery = `SELECT u.username, r.text, r.date_replied
+            sqlquery = `SELECT u.username, r.text, r.date_replied, r.user_id, r.reply_id
                         FROM user u
                         LEFT JOIN reply r
                         ON u.user_id = r.user_id
@@ -115,8 +125,12 @@ module.exports = function(app, forumData) {
          });
     });
     app.get('/userlist', function(req,res) {
+        forumData.userData = false;
+        if (req.session.user) {
+            forumData.userData = req.session.user;
+        }
         // query database to get usernames
-        let sqlquery = `SELECT username, date_joined 
+        let sqlquery = `SELECT username, date_joined, user_id
                         FROM user 
                         ORDER BY date_joined DESC`;
         // execute sql query
@@ -127,6 +141,9 @@ module.exports = function(app, forumData) {
             let newData = Object.assign({}, forumData, {users:result});
             res.render("userlist.ejs", newData);
          });
+    });
+    app.get('/about', function(req,res) {
+        res.render('about.ejs', forumData);
     });
     app.get('/register', function(req,res) {
         res.render('register.ejs', forumData);
@@ -220,7 +237,7 @@ module.exports = function(app, forumData) {
     });
     app.post('/topicjoined', function(req,res) {
         // saving data in database
-        sqlquery = `INSERT INTO topic_members (topic_id, user_id) 
+        let sqlquery = `INSERT INTO topic_members (topic_id, user_id) 
                     VALUES (?,?)`;
         // execute sql query
         let newrecord = [req.body.topicid, req.session.user.id];
@@ -236,7 +253,7 @@ module.exports = function(app, forumData) {
     });
     app.post('/topicleft', function(req,res) {
         // saving data in database
-        sqlquery = `DELETE FROM topic_members
+        let sqlquery = `DELETE FROM topic_members
                     WHERE topic_id = ?
                     AND user_id = ?`;
         // execute sql query
@@ -254,10 +271,62 @@ module.exports = function(app, forumData) {
             res.redirect(`/topic/${req.body.topicname}`);
         });
     });
+    app.post('/postdeleted', function(req,res) {
+        // deleting selected row from post table
+        let sqlquery = `DELETE FROM post
+                    WHERE post_id = ?`;
+        // execute sql query
+        db.query(sqlquery, [req.body.deletedpostid], (err,result) => {
+            if (err) {
+                res.redirect('./');
+                return console.error(err.message);
+            }
+            res.redirect(`/topic/${req.body.topicname}`);
+        });
+    });
+    app.post('/topicadded', function(req,res) {
+        // saving data in database
+        let sqlquery = `INSERT INTO topic (name) 
+                    VALUES (?)`;
+        // execute sql query
+        db.query(sqlquery, req.body.newtopicname, (err,result) => {
+            if (err) {
+                res.redirect('./');
+                return console.error(err.message);
+            }
+            res.redirect('/topiclist');
+        });
+    });
+    app.post('/topicdeleted', function(req,res) {
+        // deleting selected row from topic table
+        let sqlquery = `DELETE FROM topic
+                        WHERE topic_id = ?`;
+        // execute sql query
+        db.query(sqlquery, [req.body.deletedtopicid], (err,result) => {
+            if (err) {
+                res.redirect('./');
+                return console.error(err.message);
+            }
+            res.redirect(`/topiclist`);
+        });
+    });
+    app.post('/replydeleted', function(req,res) {
+        // deleting selected row from reply table
+        let sqlquery = `DELETE FROM reply
+                        WHERE reply_id = ?`;
+        // execute sql query
+        db.query(sqlquery, [req.body.deletedreplyid], (err,result) => {
+            if (err) {
+                res.redirect('./');
+                return console.error(err.message);
+            }
+            res.redirect(`/post/${req.body.repliedpostid}`);
+        });
+    });
     app.post('/replied', function(req,res) {
         // saving data in database
-        sqlquery = `INSERT INTO reply (user_id, post_id, text) 
-                    VALUES (?,?,?)`;
+        let sqlquery = `INSERT INTO reply (user_id, post_id, text) 
+                        VALUES (?,?,?)`;
         // execute sql query
         let newrecord = [req.session.user.id, req.body.repliedpostid, req.body.text];
         db.query(sqlquery, newrecord, (err,result) => {
@@ -266,6 +335,19 @@ module.exports = function(app, forumData) {
                 return console.error(err.message);
             }
             res.redirect(`/post/${req.body.repliedpostid}`);
+        });
+    });
+    app.post('/userbanned', function(req,res) {
+        // deleting selected row from user table
+        let sqlquery = `DELETE FROM user
+                    WHERE user_id = ?`;
+        // execute sql query
+        db.query(sqlquery, [req.body.banneduserid], (err,result) => {
+            if (err) {
+                res.redirect('./');
+                return console.error(err.message);
+            }
+            res.redirect('/userlist');
         });
     });
     app.post('/registered', function(req,res) {
@@ -279,14 +361,12 @@ module.exports = function(app, forumData) {
             res.redirect('./');
             return console.error(err.message);
           }
-        res.send('Hello ' + req.body.username + ', '
-                + ' thank you for registering! An email will be sent to you at '
-                + req.body.email);
+        res.redirect('/about');
         });
     });
     app.post('/loggedin', function(req,res) {
         // checking database for matching user data
-        let sqlquery = `SELECT user.username, user.user_id
+        let sqlquery = `SELECT user.username, user.user_id, user.isModerator
                         FROM user
                         WHERE user.username = ?
                         AND user.password = ?`;
@@ -300,7 +380,7 @@ module.exports = function(app, forumData) {
                 res.redirect('/login');
                 return;
             }
-            req.session.user = {id: result[0].user_id, name: result[0].username};
+            req.session.user = {id: result[0].user_id, name: result[0].username, isMod: result[0].isModerator};
             // get topics user has joined from database
             sqlquery = `SELECT t.topic_id
                         FROM topic t
@@ -315,7 +395,7 @@ module.exports = function(app, forumData) {
                 req.session.user.topics = result;
                 req.session.save();
             });
-        res.redirect('./');
+            res.redirect('./');
         });
     });
 }

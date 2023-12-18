@@ -9,8 +9,20 @@
     <ul>
       <!-- For loop iterates through users array -->
       <% for (let i = 0; i < users.length; i++) { %>
-        <!-- Display usernames of all users on page -->
-        <li><%= users[i].username + " || Joined: " + users[i].date_joined %></li>
+        <% let u = users[i]; %>
+        <li>
+          <!-- Display usernames of all users on page -->
+          <p><%= u.username %> || Joined: <%= u.date_joined %></p>
+          <!-- Moderators can delete other users' accounts -->
+          <% if (userData) { %>
+            <% if (userData.isMod && userData.id != u.user_id) { %>
+              <form method="POST" action="/userbanned">
+                <input type="hidden" name="banneduserid" value=<%=u.user_id%>>
+                <input type="submit" value="Ban User" />
+              </form>
+            <% } %>
+          <% } %>
+        </li>
       <% } %>
     </ul>
   </body>

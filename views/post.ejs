@@ -15,11 +15,22 @@
     <ul>
         <!-- For loop iterates through post array for replies -->
         <% for (let i = 0; i < replies.length; i++) { %>
+            <% let r = replies[i]; %>
             <!-- Display replies on page -->
             <li>
-                <p><%= replies[i].text %></p>
-                <p>Replied by: <%= replies[i].username %> || Replied on: <%= replies[i].date_replied %></p>
+                <p><%= r.text %></p>
+                <p>Replied by: <%= r.username %> || Replied on: <%= r.date_replied %></p>
             </li>
+            <!-- User can delete the reply if they are the reply poster or moderator -->
+            <% if (userData) { %>
+                <% if (userData.isMod || userData.id == r.user_id) { %>
+                    <form method="POST" action="/replydeleted">
+                        <input type="hidden" name="deletedreplyid" value=<%=r.reply_id%>>
+                        <input type="hidden" name="repliedpostid" value=<%=p.post_id%>>
+                        <input type="submit" value="Delete Reply" />
+                    </form>
+                <% } %>
+            <% } %>
         <% } %>
     </ul>
     <% if (userData) { %>
@@ -30,6 +41,15 @@
             <br><br>
             <input type="submit" value="Reply" />
         </form>
+        <!-- User can delete the post if they are the original poster or moderator -->
+        <% if (userData.isMod || userData.id == p.user_id) { %>
+            <br><br>
+            <form method="POST" action="/postdeleted">
+                <input type="hidden" name="topicname" value=<%=p.name%>>
+                <input type="hidden" name="deletedpostid" value=<%=p.post_id%>>
+                <input type="submit" value="Delete Post" />
+            </form>
+        <% } %>
     <% } %>
   </body>
 </html>
