@@ -1,5 +1,5 @@
 <!doctype html>
-<% p = post[0]; %>
+<% let p = post[0]; %>
 <html>
   <head>
     <title><%=p.title%> / <%=forumName%></title>
@@ -11,8 +11,16 @@
     <h2><%= p.title %> || <a href=/topic/<%= p.name%>> Topic: <%= p.name %></a></h2>
     <p><%= p.content %></p>
     <p>Posted by: <%= p.username %> || Posted on: <%= p.date %></p>
-    <ul> 
-        <li><%= p.text %></li>
+    <p>Replies:</p>
+    <ul>
+        <!-- For loop iterates through post array for replies -->
+        <% for (let i = 0; i < replies.length; i++) { %>
+            <!-- Display replies on page -->
+            <li>
+                <p><%= replies[i].text %></p>
+                <p>Replied by: <%= replies[i].username %> || Replied on: <%= replies[i].date_replied %></p>
+            </li>
+        <% } %>
     </ul>
     <% if (userData) { %>
         <form method="POST" action="/replied">
