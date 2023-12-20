@@ -14,9 +14,7 @@ module.exports = function(app, forumData) {
             forumData.userData = req.session.user;
         }
         // query database to get topics
-        let sqlquery = `SELECT name
-                        FROM topic 
-                        ORDER BY name ASC`;
+        let sqlquery = `SELECT * FROM topicList`;
         // execute sql query
         db.query(sqlquery, (err,result) => {
             if (err) {
@@ -106,14 +104,7 @@ module.exports = function(app, forumData) {
     });
     app.get('/allposts', function(req,res) {
         // query database to get all posts
-        let sqlquery = `SELECT t.name, p.post_id, p.title, p.content, p.date, u.username
-                        FROM topic t 
-                        LEFT JOIN post p 
-                        ON t.topic_id = p.topic_id 
-                        LEFT JOIN user u 
-                        ON p.user_id = u.user_id 
-                        WHERE p.topic_id IS NOT NULL 
-                        ORDER BY p.date DESC`;
+        let sqlquery = `SELECT * FROM allPosts`;
         // execute sql query
         db.query(sqlquery, [req.params.name], (err,result) => {
             if (err) {
@@ -130,9 +121,7 @@ module.exports = function(app, forumData) {
             forumData.userData = req.session.user;
         }
         // query database to get usernames
-        let sqlquery = `SELECT username, date_joined, user_id
-                        FROM user 
-                        ORDER BY date_joined DESC`;
+        let sqlquery = `SELECT * FROM userList`;
         // execute sql query
         db.query(sqlquery, (err,result) => {
             if (err) {
@@ -238,7 +227,7 @@ module.exports = function(app, forumData) {
     app.post('/topicjoined', function(req,res) {
         // saving data in database
         let sqlquery = `INSERT INTO topic_members (topic_id, user_id) 
-                    VALUES (?,?)`;
+                        VALUES (?,?)`;
         // execute sql query
         let newrecord = [req.body.topicid, req.session.user.id];
         db.query(sqlquery, newrecord, (err,result) => {
@@ -254,8 +243,8 @@ module.exports = function(app, forumData) {
     app.post('/topicleft', function(req,res) {
         // saving data in database
         let sqlquery = `DELETE FROM topic_members
-                    WHERE topic_id = ?
-                    AND user_id = ?`;
+                        WHERE topic_id = ?
+                        AND user_id = ?`;
         // execute sql query
         let newrecord = [req.body.topicid, req.session.user.id];
         db.query(sqlquery, newrecord, (err,result) => {
@@ -274,7 +263,7 @@ module.exports = function(app, forumData) {
     app.post('/postdeleted', function(req,res) {
         // deleting selected row from post table
         let sqlquery = `DELETE FROM post
-                    WHERE post_id = ?`;
+                        WHERE post_id = ?`;
         // execute sql query
         db.query(sqlquery, [req.body.deletedpostid], (err,result) => {
             if (err) {
@@ -287,7 +276,7 @@ module.exports = function(app, forumData) {
     app.post('/topicadded', function(req,res) {
         // saving data in database
         let sqlquery = `INSERT INTO topic (name) 
-                    VALUES (?)`;
+                        VALUES (?)`;
         // execute sql query
         db.query(sqlquery, req.body.newtopicname, (err,result) => {
             if (err) {
@@ -340,7 +329,7 @@ module.exports = function(app, forumData) {
     app.post('/userbanned', function(req,res) {
         // deleting selected row from user table
         let sqlquery = `DELETE FROM user
-                    WHERE user_id = ?`;
+                        WHERE user_id = ?`;
         // execute sql query
         db.query(sqlquery, [req.body.banneduserid], (err,result) => {
             if (err) {

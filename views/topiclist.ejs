@@ -13,6 +13,7 @@
         <li><a href=/topic/<%= topics[i].name %>><%= topics[i].name %></a></li>
       <% } %>
     </ul>
+    <!-- Moderator user can add new topics to topic list -->
     <% if (userData) { %>
       <% if (userData.isMod) { %>
       <form method="POST" action="/topicadded">
