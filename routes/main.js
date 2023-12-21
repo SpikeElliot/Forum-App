@@ -14,7 +14,7 @@ module.exports = function(app, forumData) {
             forumData.userData = req.session.user;
         }
         // query database to get topics
-        let sqlquery = `SELECT * FROM topicList`;
+        let sqlquery = `SELECT * FROM topiclist`;
         // execute sql query
         db.query(sqlquery, (err,result) => {
             if (err) {
@@ -107,7 +107,7 @@ module.exports = function(app, forumData) {
     });
     app.get('/allposts', function(req,res) {
         // query database to get all posts
-        let sqlquery = `SELECT * FROM allPosts`;
+        let sqlquery = `SELECT * FROM allposts`;
         // execute sql query
         db.query(sqlquery, [req.params.name], (err,result) => {
             if (err) {
@@ -124,7 +124,7 @@ module.exports = function(app, forumData) {
             forumData.userData = req.session.user;
         }
         // query database to get usernames
-        let sqlquery = `SELECT * FROM userList`;
+        let sqlquery = `SELECT * FROM userlist`;
         // execute sql query
         db.query(sqlquery, (err,result) => {
             if (err) {
@@ -169,7 +169,7 @@ module.exports = function(app, forumData) {
                 res.render("makepost.ejs", newData);
             });
         } else {
-            res.redirect('/login');
+            res.redirect('https://www.doc.gold.ac.uk/usr/756/login');
         }
     });
     app.get('/search', function(req,res) {
@@ -209,7 +209,7 @@ module.exports = function(app, forumData) {
                         WHERE name = ?`;
         db.query(sqlquery, [req.body.topic], (err,result) => {
             if (err) {
-              res.redirect('./');
+              res.redirect(303, './');
               return console.error(err.message);
             }
             let topicID = result[0].topic_id;
@@ -220,10 +220,10 @@ module.exports = function(app, forumData) {
             let newrecord = [req.session.user.id, topicID, req.body.title, req.body.content];
             db.query(sqlquery, newrecord, (err,result) => {
                 if (err) {
-                    res.redirect('./');
+                    res.redirect(303, './');
                     return console.error(err.message);
                 }
-                res.redirect(`/topic/${req.body.topic}`);
+                res.redirect(303, `https://www.doc.gold.ac.uk/usr/756/topic/${req.body.topic}`);
             });
         });
     });
@@ -235,12 +235,12 @@ module.exports = function(app, forumData) {
         let newrecord = [req.body.topicid, req.session.user.id];
         db.query(sqlquery, newrecord, (err,result) => {
             if (err) {
-                res.redirect('./');
+                res.redirect(303, './');
                 return console.error(err.message);
             }
             req.session.user.topics.push({topic_id: Number(req.body.topicid)});
             req.session.save();
-            res.redirect(`/topic/${req.body.topicname}`);
+            res.redirect(303, `https://www.doc.gold.ac.uk/usr/756/topic/${req.body.topicname}`);
         });
     });
     app.post('/topicleft', function(req,res) {
@@ -252,7 +252,7 @@ module.exports = function(app, forumData) {
         let newrecord = [req.body.topicid, req.session.user.id];
         db.query(sqlquery, newrecord, (err,result) => {
             if (err) {
-                res.redirect('./');
+                res.redirect(303, './');
                 return console.error(err.message);
             }
             let index = req.session.user.topics.findIndex(item => item.topic_id == req.body.topicid);
@@ -260,7 +260,7 @@ module.exports = function(app, forumData) {
                 req.session.user.topics.splice(index, 1);
             }
             req.session.save();
-            res.redirect(`/topic/${req.body.topicname}`);
+            res.redirect(303, `https://www.doc.gold.ac.uk/usr/756/topic/${req.body.topicname}`);
         });
     });
     app.post('/postdeleted', function(req,res) {
@@ -270,10 +270,10 @@ module.exports = function(app, forumData) {
         // execute sql query
         db.query(sqlquery, [req.body.deletedpostid], (err,result) => {
             if (err) {
-                res.redirect('./');
+                res.redirect(303, './');
                 return console.error(err.message);
             }
-            res.redirect(`/topic/${req.body.topicname}`);
+            res.redirect(303, `https://www.doc.gold.ac.uk/usr/756/topic/${req.body.topicname}`);
         });
     });
     app.post('/topicadded', function(req,res) {
@@ -283,10 +283,10 @@ module.exports = function(app, forumData) {
         // execute sql query
         db.query(sqlquery, req.body.newtopicname, (err,result) => {
             if (err) {
-                res.redirect('./');
+                res.redirect(303, './');
                 return console.error(err.message);
             }
-            res.redirect('/topiclist');
+            res.redirect(303, 'https://www.doc.gold.ac.uk/usr/756/topiclist');
         });
     });
     app.post('/topicdeleted', function(req,res) {
@@ -296,10 +296,10 @@ module.exports = function(app, forumData) {
         // execute sql query
         db.query(sqlquery, [req.body.deletedtopicid], (err,result) => {
             if (err) {
-                res.redirect('./');
+                res.redirect(303, './');
                 return console.error(err.message);
             }
-            res.redirect(`/topiclist`);
+            res.redirect(303, `https://www.doc.gold.ac.uk/usr/756/topiclist`);
         });
     });
     app.post('/replydeleted', function(req,res) {
@@ -309,10 +309,10 @@ module.exports = function(app, forumData) {
         // execute sql query
         db.query(sqlquery, [req.body.deletedreplyid], (err,result) => {
             if (err) {
-                res.redirect('./');
+                res.redirect(303, './');
                 return console.error(err.message);
             }
-            res.redirect(`/post/${req.body.repliedpostid}`);
+            res.redirect(303, `https://www.doc.gold.ac.uk/usr/756/post/${req.body.repliedpostid}`);
         });
     });
     app.post('/replied', function(req,res) {
@@ -323,10 +323,10 @@ module.exports = function(app, forumData) {
         let newrecord = [req.session.user.id, req.body.repliedpostid, req.body.text];
         db.query(sqlquery, newrecord, (err,result) => {
             if (err) {
-                res.redirect('./');
+                res.redirect(303, './');
                 return console.error(err.message);
             }
-            res.redirect(`/post/${req.body.repliedpostid}`);
+            res.redirect(303, `https://www.doc.gold.ac.uk/usr/756/post/${req.body.repliedpostid}`);
         });
     });
     app.post('/userbanned', function(req,res) {
@@ -336,10 +336,10 @@ module.exports = function(app, forumData) {
         // execute sql query
         db.query(sqlquery, [req.body.banneduserid], (err,result) => {
             if (err) {
-                res.redirect('./');
+                res.redirect(303, './');
                 return console.error(err.message);
             }
-            res.redirect('/userlist');
+            res.redirect(303, 'https://www.doc.gold.ac.uk/usr/756/userlist');
         });
     });
     app.post('/registered', function(req,res) {
@@ -350,10 +350,10 @@ module.exports = function(app, forumData) {
         let newrecord = [req.body.username, req.body.email, req.body.password];
         db.query(sqlquery, newrecord, (err,result) => {
           if (err) {
-            res.redirect('./');
+            res.redirect(303, './');
             return console.error(err.message);
           }
-        res.redirect('/about');
+        res.redirect(303, 'https://www.doc.gold.ac.uk/usr/756/about');
         });
     });
     app.post('/loggedin', function(req,res) {
@@ -366,10 +366,10 @@ module.exports = function(app, forumData) {
         let newrecord = [req.body.username, req.body.password];
         db.query(sqlquery, newrecord, (err,result) => {
             if (err) {
-                res.redirect('/login');
+                res.redirect(303, 'https://www.doc.gold.ac.uk/usr/756/login');
                 return console.error(err.message);
             } else if (result.length == 0) {
-                res.redirect('/login');
+                res.redirect(303, 'https://www.doc.gold.ac.uk/usr/756/login');
                 return;
             }
             req.session.user = {id: result[0].user_id, name: result[0].username, isMod: result[0].isModerator};
@@ -381,13 +381,13 @@ module.exports = function(app, forumData) {
                         WHERE m.user_id = ?`
             db.query(sqlquery, [req.session.user.id], (err,result) => {
                 if (err) {
-                    res.redirect('/login');
+                    res.redirect(303, 'https://www.doc.gold.ac.uk/usr/756/login');
                     return console.error(err.message);
                 }
                 req.session.user.topics = result;
                 req.session.save();
             });
-            res.redirect('./');
+            res.redirect(303, './');
         });
     });
 }
