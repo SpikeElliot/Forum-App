@@ -19,6 +19,9 @@ module.exports = function(app, forumData) {
         db.query(sqlquery, (err,result) => {
             if (err) {
                 res.redirect('./'); 
+            } else if (result.length == 0) {
+                res.redirect('./');
+                return;
             }
             let newData = Object.assign({}, forumData, {topics:result});
             res.render("topiclist.ejs", newData);
